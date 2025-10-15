@@ -1,4 +1,6 @@
+import os
 import time
+import datetime
 
 import openpyxl
 
@@ -16,7 +18,20 @@ MAX_RESULTS = 2
 # Сохранять после обработки N строк:
 SAVE_AFTER_N_ROWS = 100
 
-
+def init():
+    """
+    Инициализация
+    """
+    # Проверить наличие дирректории для результатов
+    if not os.path.exists('results'):
+        os.makedirs('results')
+    
+    if not os.path.exists('xls'):
+        os.makedirs('xls')
+    
+def list_files():
+    return os.listdir('xls')
+        
 def search_for_image(keyword):
     with DDGS() as ddgs:
         results = ddgs.images(
@@ -29,10 +44,24 @@ def search_for_image(keyword):
     return(image_urls)
 
 def main():
-    workbook = openpyxl.load_workbook('raw.xlsx')
     
-    result_filename = 'results.xlsx'
+    init()
+    input_files = list_files()
+    if len(input_files) == 0:
+        print('Нет входных файлов')
+        print('Сохрани таблицу в каталоге xls')
+        return
+
+    # Возьму один файл, лучше не обходить список, т.к. файлы разные
+    input_file = input_files[0]
+    if not input_file.endswith('.xlsx'):
+        print('Файл должен быть в формате xslx')
+        return
+
+    timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    result_filename = f'results/results_{timestamp}.xlsx'
     
+    workbook = openpyxl.load_workbook(f'xls/{input_file}')
     sheet = workbook.active
     
     print(f'Всего строк: {sheet.max_row}')
@@ -54,7 +83,7 @@ def main():
             print("Произошла ошибка:")
             print(err)
             print("Сохраняю результат")
-            result_filename = 'results_error.xlsx'
+            result_filename = f'results/results_{timestamp}_error_{row}.xlsx'
             break
         
         print(f'Найдено картинок: {image_urls}')
