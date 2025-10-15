@@ -34,6 +34,12 @@ def main():
     result_filename = 'results.xlsx'
     
     sheet = workbook.active
+    
+    print(f'Всего строк: {sheet.max_row}')
+    seconds = sheet.max_row * (SLEEP+0.5)
+    print(f'Примерно займет времени: {seconds // 60} минут {seconds % 60} секунд')
+
+        
     for row in range(FIRST_ROW, sheet.max_row + 1):
         if row % SAVE_AFTER_N_ROWS == 0:
             workbook.save(result_filename)
