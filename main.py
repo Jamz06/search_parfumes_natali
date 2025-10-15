@@ -13,6 +13,9 @@ SEARCH_COLUMN = 3
 URL_COLUMN = 11
 # Сколько максимально нужно картинок
 MAX_RESULTS = 2
+# Сохранять после обработки N строк:
+SAVE_AFTER_N_ROWS = 100
+
 
 def search_for_image(keyword):
     with DDGS() as ddgs:
@@ -31,8 +34,10 @@ def main():
     result_filename = 'results.xlsx'
     
     sheet = workbook.active
-    # for row in range(FIRST_ROW, sheet.max_row + 1):
-    for row in range(FIRST_ROW, 10):
+    for row in range(FIRST_ROW, sheet.max_row + 1):
+        if row % SAVE_AFTER_N_ROWS == 0:
+            workbook.save(result_filename)
+            print(f'Промежуточный Результат сохранен в {result_filename}')
         
         keyword = sheet.cell(row=row, column=SEARCH_COLUMN).value
         
