@@ -5,8 +5,9 @@ import datetime
 import openpyxl
 
 from duckduckgo_search import DDGS
+from duckduckgo_search.exceptions import RatelimitException
 
-SLEEP = 1
+SLEEP = 5
 # С какой строки начать
 FIRST_ROW = 8
 # Колонка с текстом для поиска
@@ -77,8 +78,23 @@ def main():
         keyword = sheet.cell(row=row, column=SEARCH_COLUMN).value
         
         print(f'Строка {row} поиск: {keyword}')
+        
+        search_error = True
+        
         try:
-            image_urls = search_for_image(keyword)
+            while search_error == True:
+                try:
+                    image_urls = search_for_image(keyword)
+                except RatelimitException as err:        
+                    print(err)
+                    print("Ошибка предела числа запросов поиска, жду 15 секунд")
+                    time.sleep(15)
+                    continue
+                
+                print(f'Найдено картинок: {image_urls}')
+                search_error = False
+                
+            
         except Exception as err:
             print("Произошла ошибка:")
             print(err)
@@ -86,7 +102,7 @@ def main():
             result_filename = f'results/results_{timestamp}_error_{row}.xlsx'
             break
         
-        print(f'Найдено картинок: {image_urls}')
+        
         
         # Сохранить урлы картинок
         for url_idx in range(len(image_urls)):
