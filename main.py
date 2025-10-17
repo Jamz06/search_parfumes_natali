@@ -36,10 +36,12 @@ def list_files():
 def search_for_image(keyword):
     with DDGS() as ddgs:
         results = ddgs.images(
-            keyword,
+            keyword + ' jpeg',
             max_results=MAX_RESULTS,
-            region="ru-ru"        
+            region="ru-ru"
+            
         )
+
         image_urls = [r['image'] for r in results]
 
     return(image_urls)
@@ -60,7 +62,7 @@ def main():
         return
 
     timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    result_filename = f'results/results_{timestamp}.xlsx'
+    
     
     workbook = openpyxl.load_workbook(f'xls/{input_file}')
     sheet = workbook.active
@@ -69,11 +71,15 @@ def main():
     seconds = sheet.max_row * (SLEEP+0.5)
     print(f'Примерно займет времени: {seconds // 60} минут {seconds % 60} секунд')
 
+    part = 0
         
     for row in range(FIRST_ROW, sheet.max_row + 1):
         if row % SAVE_AFTER_N_ROWS == 0:
+            part += 1
+            result_filename = f'results/results_{timestamp}_{part}.xlsx'
             workbook.save(result_filename)
             print(f'Промежуточный Результат сохранен в {result_filename}')
+            
         
         keyword = sheet.cell(row=row, column=SEARCH_COLUMN).value
         
